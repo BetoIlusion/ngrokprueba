@@ -1,66 +1,222 @@
-<p align="center"><a href="https://laravel.com" target="_blank"><img src="https://raw.githubusercontent.com/laravel/art/master/logo-lockup/5%20SVG/2%20CMYK/1%20Full%20Color/laravel-logolockup-cmyk-red.svg" width="400" alt="Laravel Logo"></a></p>
+# Laravel + Vue + Inertia + Docker
 
-<p align="center">
-<a href="https://github.com/laravel/framework/actions"><img src="https://github.com/laravel/framework/workflows/tests/badge.svg" alt="Build Status"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/dt/laravel/framework" alt="Total Downloads"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/v/laravel/framework" alt="Latest Stable Version"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/l/laravel/framework" alt="License"></a>
-</p>
+Proyecto configurado para desarrollo local y despliegue en producción con Docker.
 
-## About Laravel
+---
 
-Laravel is a web application framework with expressive, elegant syntax. We believe development must be an enjoyable and creative experience to be truly fulfilling. Laravel takes the pain out of development by easing common tasks used in many web projects, such as:
+## 🐳 Configuración Docker (Copiar Prompt)
 
-- [Simple, fast routing engine](https://laravel.com/docs/routing).
-- [Powerful dependency injection container](https://laravel.com/docs/container).
-- Multiple back-ends for [session](https://laravel.com/docs/session) and [cache](https://laravel.com/docs/cache) storage.
-- Expressive, intuitive [database ORM](https://laravel.com/docs/eloquent).
-- Database agnostic [schema migrations](https://laravel.com/docs/migrations).
-- [Robust background job processing](https://laravel.com/docs/queues).
-- [Real-time event broadcasting](https://laravel.com/docs/broadcasting).
+**Usa este prompt con una IA para configurar Docker en futuros proyectos Laravel similares:**
 
-Laravel is accessible, powerful, and provides tools required for large, robust applications.
+```
+Necesito dockerizar mi proyecto Laravel con las siguientes características:
+- Laravel 10+ con Jetstream e Inertia.js
+- Frontend: Vue 3 + Vite
+- Base de datos: SQLite (archivo local)
+- Despliegue: Render u otro servicio cloud similar
 
-## Learning Laravel
+Requisitos específicos:
+1. Crear Dockerfile basado en php:8.2-cli con:
+   - Extensiones PHP: pdo_sqlite, mbstring, exif, pcntl, bcmath, gd
+   - Node.js y npm para el frontend
+   - Composer para dependencias PHP
 
-Laravel has the most extensive and thorough [documentation](https://laravel.com/docs) and video tutorial library of all modern web application frameworks, making it a breeze to get started with the framework.
+2. Crear docker-compose.yml para desarrollo local con:
+   - Servicio único "app"
+   - Puertos: 8000 (Laravel) y 5173 (Vite)
+   - Volúmenes para desarrollo en caliente
 
-You may also try the [Laravel Bootcamp](https://bootcamp.laravel.com), where you will be guided through building a modern Laravel application from scratch.
+3. Crear script entrypoint.sh que automáticamente:
+   - Cree el archivo database.sqlite si no existe
+   - Instale dependencias de Composer (con --no-dev --optimize-autoloader en producción)
+   - Instale dependencias de npm
+   - Ejecute npm run build para compilar assets
+   - Ejecute migraciones con --force
+   - Optimice caché de Laravel (config, route, view)
+   - Inicie el servidor con php artisan serve
 
-If you don't feel like reading, [Laracasts](https://laracasts.com) can help. Laracasts contains thousands of video tutorials on a range of topics including Laravel, modern PHP, unit testing, and JavaScript. Boost your skills by digging into our comprehensive video library.
+4. Configuraciones para producción en HTTPS (Render/similar):
+   - Modificar app/Http/Middleware/TrustProxies.php: $proxies = '*'
+   - Configurar variables de entorno necesarias
 
-## Laravel Sponsors
+5. Crear .dockerignore adecuado
 
-We would like to extend our thanks to the following sponsors for funding Laravel development. If you are interested in becoming a sponsor, please visit the [Laravel Partners program](https://partners.laravel.com).
+Proporciona todos los archivos necesarios y las instrucciones de configuración de variables de entorno.
+```
 
-### Premium Partners
+---
 
-- **[Vehikl](https://vehikl.com/)**
-- **[Tighten Co.](https://tighten.co)**
-- **[WebReinvent](https://webreinvent.com/)**
-- **[Kirschbaum Development Group](https://kirschbaumdevelopment.com)**
-- **[64 Robots](https://64robots.com)**
-- **[Curotec](https://www.curotec.com/services/technologies/laravel/)**
-- **[Cyber-Duck](https://cyber-duck.co.uk)**
-- **[DevSquad](https://devsquad.com/hire-laravel-developers)**
-- **[Jump24](https://jump24.co.uk)**
-- **[Redberry](https://redberry.international/laravel/)**
-- **[Active Logic](https://activelogic.com)**
-- **[byte5](https://byte5.de)**
-- **[OP.GG](https://op.gg)**
+## 📁 Estructura de Archivos Docker
 
-## Contributing
+Este proyecto incluye 4 archivos clave para Docker:
 
-Thank you for considering contributing to the Laravel framework! The contribution guide can be found in the [Laravel documentation](https://laravel.com/docs/contributions).
+```
+├── Dockerfile              # Imagen base con PHP, Node y extensiones
+├── docker-compose.yml      # Orquestación para desarrollo local
+├── docker/
+│   └── entrypoint.sh      # Script de inicialización automática
+└── .dockerignore          # Archivos excluidos del build
+```
 
-## Code of Conduct
+---
 
-In order to ensure that the Laravel community is welcoming to all, please review and abide by the [Code of Conduct](https://laravel.com/docs/contributions#code-of-conduct).
+## 🚀 Uso Local (Desarrollo)
 
-## Security Vulnerabilities
+### 1. Iniciar la aplicación:
 
-If you discover a security vulnerability within Laravel, please send an e-mail to Taylor Otwell via [taylor@laravel.com](mailto:taylor@laravel.com). All security vulnerabilities will be promptly addressed.
+```bash
+docker-compose up -d
+```
 
-## License
+### 2. Ver logs:
 
-The Laravel framework is open-sourced software licensed under the [MIT license](https://opensource.org/licenses/MIT).
+```bash
+docker-compose logs -f
+```
+
+### 3. Acceder a la aplicación:
+
+-   **Backend**: http://localhost:8000
+-   **Frontend (Vite HMR)**: Ejecuta `docker-compose exec app npm run dev`
+
+### 4. Comandos útiles:
+
+```bash
+# Ejecutar comandos Artisan
+docker-compose exec app php artisan migrate
+
+# Instalar dependencias adicionales
+docker-compose exec app composer require nombre/paquete
+
+# Acceder al contenedor
+docker-compose exec app bash
+
+# Detener
+docker-compose down
+```
+
+---
+
+## ☁️ Despliegue en Producción (Render)
+
+### Variables de Entorno Requeridas:
+
+En el panel de Render → Environment, configura:
+
+```env
+# Aplicación
+APP_NAME=Laravel
+APP_ENV=production
+APP_KEY=base64:TU_CLAVE_GENERADA
+APP_DEBUG=false
+APP_URL=https://tu-dominio.onrender.com
+
+# Base de datos SQLite
+DB_CONNECTION=sqlite
+DB_DATABASE=/var/www/html/database/database.sqlite
+
+# Assets (IMPORTANTE para HTTPS)
+ASSET_URL=https://tu-dominio.onrender.com
+
+# Proxy (IMPORTANTE para HTTPS)
+FORWARD_PROTO=https
+
+# Logs
+LOG_CHANNEL=stderr
+LOG_LEVEL=debug
+
+# Otros (mantener valores por defecto de Laravel)
+SESSION_DRIVER=file
+CACHE_DRIVER=file
+QUEUE_CONNECTION=sync
+```
+
+### Pasos para Deploy:
+
+1. **Conecta tu repositorio de GitHub a Render**
+2. **Configura las variables de entorno** (arriba)
+3. **Render detectará el Dockerfile automáticamente**
+4. **Espera a que termine el build** (primera vez toma ~5-10 min)
+5. **Accede a tu URL asignada**
+
+---
+
+## ⚠️ Problemas Comunes y Soluciones
+
+### 🔴 Pantalla en blanco / Archivos no se cargan
+
+**Síntoma:** La página carga pero está en blanco, o los botones de Inertia no funcionan.
+
+**Causa:** Laravel genera URLs con `http://` en lugar de `https://`, el navegador bloquea por "Mixed Content".
+
+**Solución:**
+
+1. Verifica que `APP_URL` y `ASSET_URL` usen `https://`
+2. Verifica que `TrustProxies.php` tenga `$proxies = '*'`
+3. Recarga con Ctrl+F5
+
+### 🔴 Error "APP_KEY missing"
+
+**Causa:** La variable `APP_KEY` no está configurada en Render.
+
+**Solución:**
+
+1. En tu PC: Ejecuta `php artisan key:generate` y copia la clave del archivo `.env`
+2. En Render: Pega esa clave en la variable `APP_KEY`
+
+### 🔴 Base de datos se borra al reiniciar
+
+**Causa:** SQLite en Render (plan gratuito) usa almacenamiento efímero.
+
+**Solución:**
+
+-   **Opción A (Recomendada):** Usa PostgreSQL gratis de Render
+-   **Opción B:** Contrata un "Persistent Disk" de pago
+-   **Opción C:** Solo para pruebas, acepta que los datos se borren
+
+---
+
+## 🛠️ Configuraciones Aplicadas
+
+### 1. **TrustProxies.php**
+
+```php
+protected $proxies = '*';
+```
+
+Permite que Laravel detecte correctamente HTTPS detrás de proxies.
+
+### 2. **Entrypoint.sh**
+
+-   NO genera `APP_KEY` automáticamente (se configura por variables de entorno)
+-   Compila assets con `npm run build`
+-   Optimiza caché de Laravel para producción
+
+### 3. **Dockerfile**
+
+-   Usa `php:8.2-cli` (ligero, suficiente para `artisan serve`)
+-   Instala extensiones necesarias para Laravel
+-   Copia código con `COPY . .` para producción
+
+---
+
+## 📚 Stack Tecnológico
+
+-   **Backend:** Laravel 10 + Jetstream
+-   **Frontend:** Vue 3 + Inertia.js + Tailwind CSS
+-   **Build:** Vite
+-   **Base de datos:** SQLite (desarrollo) / PostgreSQL (producción recomendada)
+-   **Containerización:** Docker
+-   **Despliegue:** Render (compatible con Heroku, Railway, Fly.io)
+
+---
+
+## 👤 Autor
+
+Desarrollado como proyecto de prueba para Docker + Laravel + Render.
+
+---
+
+## 📄 Licencia
+
+Este proyecto usa Laravel, licenciado bajo [MIT license](https://opensource.org/licenses/MIT).
