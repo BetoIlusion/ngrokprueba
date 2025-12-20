@@ -1,6 +1,6 @@
 FROM php:8.2-cli
 
-# Install system dependencies
+# Instalar dependencias del sistema
 RUN apt-get update && apt-get install -y \
     git \
     curl \
@@ -14,22 +14,26 @@ RUN apt-get update && apt-get install -y \
     nodejs \
     npm
 
-# Clear cache
+# Limpiar cache
 RUN apt-get clean && rm -rf /var/lib/apt/lists/*
 
-# Install PHP extensions
+# Instalar extensiones de PHP
 RUN docker-php-ext-install pdo_sqlite mbstring exif pcntl bcmath gd
 
-# Get latest Composer
+# Obtener Composer
 COPY --from=composer:latest /usr/bin/composer /usr/bin/composer
 
-# Set working directory
+# Establecer directorio de trabajo
 WORKDIR /var/www/html
 
-# Expose ports for Artisan and Vite
+# --- ESTA ES LA LÍNEA QUE FALTABA ---
+COPY . .
+# ------------------------------------
+
+# Exponer puertos
 EXPOSE 8000 5173
 
-# Entrypoint script will handle startup
+# Script de entrada
 COPY docker/entrypoint.sh /usr/local/bin/entrypoint.sh
 RUN chmod +x /usr/local/bin/entrypoint.sh
 
